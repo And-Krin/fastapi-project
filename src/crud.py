@@ -60,18 +60,6 @@ def delete_item(db: Session, item_id: int):
     return {item_id: 'deleted'}
 
 
-def switch_user(db: Session, user_id: int):
-    user = get_user(db=db, user_id=user_id)
-    user.is_active = not user.is_active
-    if user.is_active:
-        state = "restored"
-    else:
-        state = "deleted"
-    db.commit()
-    db.refresh(user)
-    return f"User {user.username} is {state}"
-
-
 def update_item(db: Session,
                 item: dict,
                 edit_item: schemas.ItemBase,):

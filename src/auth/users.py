@@ -29,18 +29,6 @@ gender_list = Literal["undefined", "man", "woman"]
 #     return sys.path
 
 
-@router.post("/admin/",
-             response_model=schemas.User)
-def create_admin(
-        gender: gender_list,
-        user: schemas.UserCreate,
-        db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_username(db, username=user.username)
-    if db_user:
-        raise HTTPException(status_code=400, detail="username already registered")
-    return crud.create_user(db=db, user=user, gender=gender, role_user="admin")
-
-
 @router.post("/user/",
              response_model=schemas.User)
 def create_user(
@@ -75,29 +63,27 @@ def read_user(
     return db_user
 
 
-@router.put("/users/switch/{user_id}",
-            dependencies=[Depends(role_admin)],)
-def switch_user(
-        user_id: int,
-        db: Session = Depends(get_db)):
-    return crud.switch_user(db=db, user_id=user_id)
-
-
-@router.put("/user/update/{user_id}",
+@router.put("/users/update/{user_id}",
             dependencies=[Depends(active_user)])
-def update_yourself(
+def update_user(
         edit_user: schemas.UserCreate,
         gender: gender_list,
         is_active: bool,
-        user_id: int = Depends(active_user),
+        user_id: int,
+        current_user_id: int = Depends(active_user),
         role: role_list = "user",
         db: Session = Depends(get_db),):
     user = crud.get_user(db=db, user_id=user_id)
+    current_user = crud.get_user(db=db, user_id=current_user_id)
+    if user_id != current_user_id:
+        if current_user.role != "admin":
+            raise HTTPException(status_code=401, detail='Not enough rights')
+        raise HTTPException(status_code=401, detail='Not enough rights')
     db_user = crud.get_user_by_username(db=db, username=edit_user.username)
     if db_user:
         raise HTTPException(status_code=400, detail="username already registered")
     if role != user.role:
-        if user.role == "admin":
+        if current_user.role == "admin":
             return crud.update_user(
                 db=db, user_id=user_id, gender=gender, is_active=is_active, role_user=role, edit_user=edit_user)
         else:
@@ -107,17 +93,17 @@ def update_yourself(
             db=db, user_id=user_id, gender=gender, is_active=is_active, role_user=role, edit_user=edit_user)
 
 
-@router.put("/users/update/{user_id}",
-            dependencies=[Depends(role_admin)])
-def update_user(
-        edit_user: schemas.UserCreate,
-        gender: gender_list,
-        is_active: bool,
-        user_id: int,
-        role: role_list = "user",
-        db: Session = Depends(get_db),):
-    db_user = crud.get_user_by_username(db=db, username=edit_user.username)
-    if db_user:
-        raise HTTPException(status_code=400, detail="username already registered")
-    return crud.update_user(
-            db=db, user_id=user_id, gender=gender, is_active=is_active, role_user=role, edit_user=edit_user)
+# @router.put("/users/update/{user_id}",
+#             dependencies=[Depends(role_admin)])
+# def update_user(
+#         edit_user: schemas.UserCreate,
+#         gender: gender_list,
+#         is_active: bool,
+#         user_id: int,
+#         role: role_list = "user",
+#         db: Session = Depends(get_db),):
+#     db_user = crud.get_user_by_username(db=db, username=edit_user.username)
+#     if db_user:
+#         raise HTTPException(status_code=400, detail="username already registered")
+#     return crud.update_user(
+#             db=db, user_id=user_id, gender=gender, is_active=is_active, role_user=role, edit_user=edit_user)
