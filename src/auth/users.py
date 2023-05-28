@@ -19,7 +19,7 @@ router = APIRouter(tags=['users'])
 role_admin = role.RoleChecker(["admin"])
 role_moderator = role.RoleChecker(["moderator", "admin"])
 
-active_user = auth_handler.auth_wrapper
+current_user = auth_handler.auth_wrapper
 
 role_list = Literal["user", "moderator", "admin"]
 gender_list = Literal["undefined", "man", "woman"]
@@ -64,26 +64,26 @@ def read_user(
 
 
 @router.put("/users/update/{user_id}",
-            dependencies=[Depends(active_user)])
+            dependencies=[Depends(current_user)])
 def update_user(
         edit_user: schemas.UserCreate,
         gender: gender_list,
         is_active: bool,
         user_id: int,
-        current_user_id: int = Depends(active_user),
+        this_user_id: schemas.User = Depends(current_user),
         role: role_list = "user",
         db: Session = Depends(get_db),):
     user = crud.get_user(db=db, user_id=user_id)
-    current_user = crud.get_user(db=db, user_id=current_user_id)
-    if user_id != current_user_id:
-        if current_user.role != "admin":
+    this_user = crud.get_user(db=db, user_id=this_user_id)
+    if user_id != this_user.id:
+        if this_user.role != "admin":
             raise HTTPException(status_code=401, detail='Not enough rights')
         raise HTTPException(status_code=401, detail='Not enough rights')
     db_user = crud.get_user_by_username(db=db, username=edit_user.username)
     if db_user:
         raise HTTPException(status_code=400, detail="username already registered")
     if role != user.role:
-        if current_user.role == "admin":
+        if this_user.role == "admin":
             return crud.update_user(
                 db=db, user_id=user_id, gender=gender, is_active=is_active, role_user=role, edit_user=edit_user)
         else:

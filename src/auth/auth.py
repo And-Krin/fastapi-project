@@ -11,6 +11,8 @@ from auth import schemas
 import crud, models
 from database import get_db
 
+gender_list = Literal["undefined", "man", "woman"]
+role_list = Literal["user", "moderator", "admin"]
 
 router = APIRouter(tags=['auth'])
 
@@ -58,19 +60,13 @@ auth_handler = AuthHandler()
 
 @router.post('/register', status_code=201)
 def register(
-        gender: Literal["und", "man", "woman"],
+        gender: gender_list,
         auth_pass: schemas.UserCreate,
         db: Session = Depends(get_db)):
-    users_db = db.query(models.User.username).all()
-    if any(x['username'] == auth_pass.username for x in users_db):
+    db_user = crud.get_user_by_username(db, username=auth_pass.username)
+    if db_user:
         raise HTTPException(status_code=400, detail='Username is taken')
-    hashed_password = auth_handler.get_password_hash(auth_pass.password)
-    # users.append({
-    #     'username': auth_pass.username,
-    #     'password': hashed_passwordpip
-    # })
-    auth_pass.password = hashed_password
-    return crud.create_user(db=db, user=auth_pass, gender=gender)
+    return crud.create_user(db=db, user=auth_pass, gender=gender, role_user="user")
 
 
 @router.post('/login')
@@ -79,7 +75,6 @@ def login(
         db: Session = Depends(get_db)):
     user = None
     users_db = db.query(models.User).all()
-    print(auth_pass.username)
     for x in users_db:
         if x.username == auth_pass.username:
             user = crud.get_user_by_username(db=db, username=auth_pass.username)
@@ -88,7 +83,6 @@ def login(
         raise HTTPException(status_code=401, detail='Invalid username and/or password')
     token = auth_handler.encode_token(user.id)
     return {'token': token}
-    # return auth_pass
 
 
 @router.post('/unprotected')
@@ -99,4 +93,4 @@ def unprotected():
 @router.get('/protected',
             dependencies=[Depends(auth_handler.auth_wrapper)])
 def protected(user_id=Depends(auth_handler.auth_wrapper)):
-    return {'user_id': user_id}
+    return {"user_id": user_id}

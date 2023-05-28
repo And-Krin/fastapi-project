@@ -43,9 +43,15 @@ class UserGetPass(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
-    items: List[Item] = []
     gender: str
     role: str
+
+    class Config:
+        orm_mode = True
+
+
+class UserAndItems(User):
+    items: List[Item] = []
 
     class Config:
         orm_mode = True

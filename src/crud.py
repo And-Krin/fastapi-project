@@ -61,7 +61,7 @@ def delete_item(db: Session, item_id: int):
 
 
 def update_item(db: Session,
-                item: dict,
+                item: schemas.Item,
                 edit_item: schemas.ItemBase,):
     item.title = edit_item.title
     item.body = edit_item.body
