@@ -66,7 +66,7 @@ def register(
     db_user = crud.get_user_by_username(db, username=auth_pass.username)
     if db_user:
         raise HTTPException(status_code=400, detail='Username is taken')
-    return crud.create_user(db=db, user=auth_pass, gender=gender, role_user="user")
+    return crud.create_user(db=db, user=auth_pass, gender=gender)
 
 
 @router.post('/login')

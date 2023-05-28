@@ -1,4 +1,5 @@
 from typing import List, Union, Literal
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -20,6 +21,8 @@ class ItemCreate(ItemBase):
 class Item(ItemBase):
     id: int
     owner_id: int
+    time_created: datetime
+    time_updated: Union[datetime, None] = None
 
     class Config:
         orm_mode = True
@@ -45,6 +48,7 @@ class User(UserBase):
     is_active: bool
     gender: str
     role: str
+    time_created: datetime
 
     class Config:
         orm_mode = True

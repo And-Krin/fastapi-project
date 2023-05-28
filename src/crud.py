@@ -28,7 +28,7 @@ def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, user: schemas.UserCreate, gender: str, role_user: str):
+def create_user(db: Session, user: schemas.UserCreate, gender: str, role_user: str = "user"):
     hashed_password = auth_handler.get_password_hash(user.password)
     db_user = models.User(
         username=user.username,
@@ -74,8 +74,8 @@ def update_user(db: Session,
                 user_id: int,
                 gender: str,
                 is_active: bool,
-                role_user: str,
-                edit_user: schemas.UserCreate):
+                edit_user: schemas.UserCreate,
+                role_user: str = "user"):
     hashed_password = auth_handler.get_password_hash(edit_user.password)
     user = get_user(db=db, user_id=user_id)
     user.username = edit_user.username
