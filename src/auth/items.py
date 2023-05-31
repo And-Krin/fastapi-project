@@ -1,28 +1,25 @@
 from typing import List
-from fastapi import Depends, HTTPException, Response
+from fastapi import Depends, HTTPException
 
 from fastapi import APIRouter
 from sqlalchemy.orm import Session
-# from ..main import get_db, auth_handler
 
-# sys.path.append(r'/sql_app/.')
 import crud, role
 from auth.auth import auth_handler
 from database import get_db
 from auth import schemas
+from settings import settings
 
 router = APIRouter(tags=['items'])
 
-moderator = ["moderator", "admin"]
-
-role_moderator = role.RoleChecker(moderator)
+checking_for_moderator = role.RoleChecker(settings.moderator_list)
 
 active_user = auth_handler.auth_wrapper
 
 
 @router.post("/item/create/",
              dependencies=[Depends(active_user)],
-             response_model=schemas.Item)
+             response_model=schemas.ItemCreate)
 def create_item(
         item: schemas.ItemCreate,
         db: Session = Depends(get_db),
@@ -31,7 +28,7 @@ def create_item(
 
 
 @router.get("/items/{item_id}",
-            response_model=schemas.Item)
+            response_model=schemas.ItemAndUser)
 def read_item(
         item_id: int,
         db: Session = Depends(get_db)):
@@ -42,7 +39,7 @@ def read_item(
 
 
 @router.get("/items/",
-            response_model=List[schemas.Item],)
+            response_model=List[schemas.ItemAndUser],)
 def read_items(
         skip: int = 0,
         limit: int = 100,
@@ -52,7 +49,7 @@ def read_items(
 
 
 @router.delete("/items/delete/{item_id}",
-               dependencies=[Depends(role_moderator)],)
+               dependencies=[Depends(checking_for_moderator)],)
 def delete_item(
         item_id: int,
         db: Session = Depends(get_db)):
@@ -68,27 +65,9 @@ def update_item(
         user_id=Depends(active_user)):
     item = crud.get_item(db=db, item_id=item_id)
     user = crud.get_user(db=db, user_id=user_id)
-    if user_id == item.owner_id or user.role in moderator:
+    if user_id == item.owner_id or user.role in settings.moderator_list:
         return crud.update_item(db=db, item=item, edit_item=edit_item)
     else:
         raise HTTPException(status_code=401, detail='Not enough rights')
 
 
-@router.get("/items_r/",
-            response_model=List[schemas.NewItem])
-def read_items_and_users(
-        response: Response,
-        page: int = 0,
-        limit: int = 100,
-        db: Session = Depends(get_db)):
-    items = crud.get_items_join_users(db=db, page=page, limit=limit)
-    data = {
-        'items': items,
-        'page': 1,
-        'page_total_count': 2,
-        'total_count': 6,
-    }
-    response.data = data
-    response.headers['x-total-count'] = f"{crud.rows(db=db)}"
-    response.headers['Access-Control-Expose-Headers'] = "*"
-    return items

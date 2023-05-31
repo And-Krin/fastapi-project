@@ -1,15 +1,11 @@
-from sqlalchemy.orm import Session, joinedload
-import models, role
+from sqlalchemy.orm import Session
+import models
 from auth import schemas
 from auth.auth import AuthHandler
 
 auth_handler = AuthHandler()
 
 active_user = auth_handler.auth_wrapper
-
-
-def get_items_join_users(db: Session, page: int = 0, limit: int = 100):
-    return db.query(models.Item).options(joinedload(models.Item.owner)).offset(page * limit - limit).limit(limit).all()
 
 
 def get_user(db: Session, user_id: int):
@@ -28,17 +24,19 @@ def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, user: schemas.UserCreate, gender: str, role_user: str = "user"):
+def create_user(db: Session,
+                user: schemas.UserCreate,
+                role_user: str = "user"):
     hashed_password = auth_handler.get_password_hash(user.password)
-    db_user = models.User(
+    new_user = models.User(
         username=user.username,
         hashed_password=hashed_password,
-        gender=gender,
+        gender=user.gender,
         role=role_user)
-    db.add(db_user)
+    db.add(new_user)
     db.commit()
-    db.refresh(db_user)
-    return db_user
+    db.refresh(new_user)
+    return new_user
 
 
 def create_item(db: Session, item: schemas.ItemCreate, user_id: int):
@@ -67,28 +65,18 @@ def update_item(db: Session,
     item.body = edit_item.body
     db.commit()
     db.refresh(item)
-    return {'id': item.id, 'title': item.title, 'body': item.body}
+    return item
 
 
 def update_user(db: Session,
-                user_id: int,
-                gender: str,
-                is_active: bool,
-                edit_user: schemas.UserCreate,
-                role_user: str = "user"):
-    hashed_password = auth_handler.get_password_hash(edit_user.password)
-    user = get_user(db=db, user_id=user_id)
-    user.username = edit_user.username
+                edit_user_id: int,
+                new_password: str,
+                edit_user: schemas.UserUpdate):
+    hashed_password = auth_handler.get_password_hash(new_password)
+    user = get_user(db=db, user_id=edit_user_id)
     user.hashed_password = hashed_password
-    user.gender = gender
-    user.is_active = is_active
-    user.role = role_user
+    for key, value in edit_user:
+        setattr(user, key, value)
     db.commit()
     db.refresh(user)
-    return {
-            'id': user.id,
-            'username': user.username,
-            'is_active': user.is_active,
-            'role': user.role,
-            'gender': user.gender,
-            }
+    return user

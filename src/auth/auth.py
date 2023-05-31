@@ -1,5 +1,3 @@
-from typing import Literal
-
 import jwt
 from fastapi import HTTPException, Security, APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -10,9 +8,6 @@ from sqlalchemy.orm import Session
 from auth import schemas
 import crud, models
 from database import get_db
-
-gender_list = Literal["undefined", "man", "woman"]
-role_list = Literal["user", "moderator", "admin"]
 
 router = APIRouter(tags=['auth'])
 
@@ -41,7 +36,7 @@ class AuthHandler:
         )
 
     def decode_token(self, token):
-        print('Token', token, jwt.decode(jwt=token, key=self.secret, algorithms=['HS256']))
+        # print('Token', token, jwt.decode(jwt=token, key=self.secret, algorithms=['HS256']))
         try:
             payload = jwt.decode(token, self.secret, algorithms=['HS256'])
 
@@ -60,18 +55,17 @@ auth_handler = AuthHandler()
 
 @router.post('/register', status_code=201)
 def register(
-        gender: gender_list,
         auth_pass: schemas.UserCreate,
         db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, username=auth_pass.username)
     if db_user:
         raise HTTPException(status_code=400, detail='Username is taken')
-    return crud.create_user(db=db, user=auth_pass, gender=gender)
+    return crud.create_user(db=db, user=auth_pass)
 
 
 @router.post('/login')
 def login(
-        auth_pass: schemas.UserCreate,
+        auth_pass: schemas.UserLogin,
         db: Session = Depends(get_db)):
     user = None
     users_db = db.query(models.User).all()

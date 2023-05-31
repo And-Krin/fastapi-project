@@ -1,5 +1,6 @@
-from typing import List, Union, Literal
+from typing import List, Union
 from datetime import datetime
+from settings import settings
 
 from pydantic import BaseModel
 
@@ -12,6 +13,9 @@ from pydantic import BaseModel
 class ItemBase(BaseModel):
     title: Union[str, None] = None
     body: Union[str, None] = None
+
+    class Config:
+        orm_mode = True
 
 
 class ItemCreate(ItemBase):
@@ -35,8 +39,18 @@ class UserBase(BaseModel):
         orm_mode = True
 
 
-class UserCreate(UserBase):
+class UserLogin(UserBase):
     password: str
+
+
+class UserCreate(UserLogin):
+    gender: settings.gender_list
+
+
+class UserUpdate(UserBase):
+    gender: settings.gender_list
+    is_active: bool
+    role: settings.role_list
 
 
 class UserGetPass(UserBase):
@@ -55,15 +69,13 @@ class User(UserBase):
 
 
 class UserAndItems(User):
-    items: List[Item] = []
+    items: List[ItemBase] = []
 
-    class Config:
-        orm_mode = True
+
+class ItemAndUser(Item):
+    owner: UserBase
 
 
 class NewItem(Item):
     owner: UserBase
-
-    class Config:
-        orm_mode = True
 
