@@ -1,5 +1,3 @@
-import sys
-print("In module products sys.path[0], __package__ ==", sys.path[0], __package__)
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -7,13 +5,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-import os
-import sys
-
-sys.path.append(os.path.join(sys.path[0], 'src'))
-from src.settings import settings
-from src.models import Base
-# from sql_app_d.base import Base
+from settings import settings
+from models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,6 +15,7 @@ config = context.config
 section = config.config_ini_section
 print(settings.DATABASE_URL)
 config.set_section_option(section, "DATABASE_URL", settings.DATABASE_URL)
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -51,10 +45,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-
-    # url = config.get_main_option("sqlalchemy.url")
-    url = settings.DATABASE_URL
-
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -73,19 +64,12 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # connectable = engine_from_config(
-    #     config.get_section(config.config_ini_section),
-    #     prefix="sqlalchemy.",
-    #     poolclass=pool.NullPool,
-    # )
-    configuration = config.get_section(config.config_ini_section)
-    configuration['sqlalchemy.url'] = settings.DATABASE_URL
     connectable = engine_from_config(
-        configuration,
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-    # connectable = engine
+
     with connectable.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata

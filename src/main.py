@@ -1,5 +1,3 @@
-from typing import Literal
-
 # print(sys.path)
 # sys.path.remove('.')
 # print(sys.path)
@@ -8,16 +6,20 @@ from typing import Literal
 from fastapi import FastAPI
 from fastapi_sqlalchemy import DBSessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_users import FastAPIUsers
 
 import models
-from database import engine
-from auth import items, users, auth
+from FU_auth.schemas import UserRead, UserCreate
+from FU_auth.manager import get_user_manager
+from FU_auth.FU_auth import auth_backend
+from settings import settings
 
-# print("In module products __package__, __name__ ==", __package__, __name__)
-
-# load_dotenv('/.env')
-
-models.Base.metadata.create_all(bind=engine)
+fastapi_users = FastAPIUsers[models.User, int](
+    get_user_manager,
+    [auth_backend],
+)
+#
+# models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -30,31 +32,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
-app.add_middleware(DBSessionMiddleware, db_url='postgresql://postgres:postgres@postgresql/test')
+## app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
+# app.add_middleware(DBSessionMiddleware, db_url='postgresql://postgres:postgres@postgresql/test')
+app.add_middleware(DBSessionMiddleware, db_url=settings.DATABASE_URL)
 
-app.include_router(users.router)
-app.include_router(items.router)
-app.include_router(auth.router)
+# app.include_router(users.router)
+# app.include_router(items.router)
+# app.include_router(auth.router)
 
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth/jwt",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["auth"],
+)
 
-# Dependency
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-
-
-# sys.path.append(r'/sql_app/routers')
-
-
-
-# To run locally
-# if __name__ == '__main__':
-#     uvicorn.run(app, host='0.0.0.0', port=8000)
-
-# запуск докера: docker-compose up -d
-# запуск проекта: uvicorn src/main:app --reload
-# запуск фронта: npm start
+from FU_auth.database import create_db_and_tables
+create_db_and_tables()
