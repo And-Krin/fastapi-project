@@ -21,7 +21,7 @@ class Base(DeclarativeBase):
     pass
 
 class User(SQLAlchemyBaseUserTable[int], Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(String(length=320), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(length=1024), nullable=False)
@@ -56,12 +56,12 @@ class User(SQLAlchemyBaseUserTable[int], Base):
 
 
 class Item(Base):
-    __tablename__ = "item"
+    __tablename__ = "items"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     body = Column(String)
-    owner_id = Column(Integer, ForeignKey("user.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"))
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 
