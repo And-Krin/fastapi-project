@@ -14,27 +14,29 @@ from FU_auth.manager import get_user_manager
 from FU_auth.FU_auth import auth_backend
 from settings import settings
 
-fastapi_users = FastAPIUsers[models.User, int](
-    get_user_manager,
-    [auth_backend],
-)
+
 #
 # models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-origins = ["*"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# origins = ["*"]
+#
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 ## app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
 # app.add_middleware(DBSessionMiddleware, db_url='postgresql://postgres:postgres@postgresql/test')
-app.add_middleware(DBSessionMiddleware, db_url=settings.DATABASE_URL)
+# app.add_middleware(DBSessionMiddleware, db_url=settings.DATABASE_URL)
+
+fastapi_users = FastAPIUsers[models.User, int](
+    get_user_manager,
+    [auth_backend],
+)
 
 # app.include_router(users.router)
 # app.include_router(items.router)
@@ -51,5 +53,5 @@ app.include_router(
     tags=["auth"],
 )
 
-from FU_auth.database import create_db_and_tables
-create_db_and_tables()
+# from FU_auth.database import create_db_and_tables
+# create_db_and_tables()

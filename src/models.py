@@ -20,6 +20,7 @@ metadata = MetaData()
 class Base(DeclarativeBase):
     pass
 
+
 class User(SQLAlchemyBaseUserTable[int], Base):
     __tablename__ = "users"
 

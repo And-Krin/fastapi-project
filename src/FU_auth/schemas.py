@@ -11,7 +11,7 @@ from settings import settings
 class UserRead(schemas.BaseUser[int]):
     username: str
     id: int
-    email: EmailStr
+    email: str
     is_active: bool = True
     is_superuser: bool = False
     is_verified: bool = False
