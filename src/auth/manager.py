@@ -3,10 +3,12 @@ from typing import Optional
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, IntegerIDMixin
 
-# from FU_auth.database import get_user_db
-# from schemas import UserRead
+from database import get_user_db
 from models import User
-from FU_auth.database import get_user_db
+
+# from auth.database import get_user_db
+# from schemas import UserRead
+
 
 SECRET = "SECRET"
 

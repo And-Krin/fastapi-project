@@ -1,25 +1,30 @@
-# from sqlalchemy.orm import Session
-# import models
-# from auth import schemas
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+import models
+# from users import schemas
 # from auth.auth import AuthHandler
-#
+
 # auth_handler = AuthHandler()
 #
 # active_user = auth_handler.auth_wrapper
-#
-#
-# def get_user(db: Session, user_id: int):
-#     return db.query(models.User).filter(models.User.id == user_id).first()
-#
-#
+
+
+async def get_user(db: AsyncSession, user_id: int):
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
+
 # def get_user_by_username(db: Session, username: str):
 #     return db.query(models.User).filter(models.User.username == username).first()
-#
-#
-# def get_users(db: Session, skip: int = 0, limit: int = 100):
-#     return db.query(models.User).offset(skip).limit(limit).all()
-#
-#
+
+
+async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
+    query = select(models.User)
+    # return db.execute(query).offset(skip).limit(limit).all()
+    result = await db.execute(query)
+    return result.all()
+
+
 # def get_items(db: Session, skip: int = 0, limit: int = 100):
 #     return db.query(models.Item).offset(skip).limit(limit).all()
 #

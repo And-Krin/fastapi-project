@@ -1,45 +1,16 @@
-# print(sys.path)
-# sys.path.remove('.')
-# print(sys.path)
+from fastapi import FastAPI, Depends
 
-# from dotenv import load_dotenv
-from fastapi import FastAPI
-from fastapi_sqlalchemy import DBSessionMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi_users import FastAPIUsers
+from auth.base_config import fastapi_users, auth_backend, current_user
+from models import User
+from users.schemas import UserRead, UserCreate
 
-import models
-from FU_auth.schemas import UserRead, UserCreate
-from FU_auth.manager import get_user_manager
-from FU_auth.FU_auth import auth_backend
-from settings import settings
-
-
-#
-# models.Base.metadata.create_all(bind=engine)
+from users.router import router as users_router
+from items.router import router as items_router
 
 app = FastAPI()
 
-# origins = ["*"]
-#
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-## app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
-# app.add_middleware(DBSessionMiddleware, db_url='postgresql://postgres:postgres@postgresql/test')
-# app.add_middleware(DBSessionMiddleware, db_url=settings.DATABASE_URL)
-
-fastapi_users = FastAPIUsers[models.User, int](
-    get_user_manager,
-    [auth_backend],
-)
-
-# app.include_router(users.router)
-# app.include_router(items.router)
+app.include_router(users_router)
+app.include_router(items_router)
 # app.include_router(auth.router)
 
 app.include_router(
@@ -53,5 +24,17 @@ app.include_router(
     tags=["auth"],
 )
 
-# from FU_auth.database import create_db_and_tables
+# app.include_router(
+#     fastapi_users.get_users_router(UserRead, UserUpdate),
+#     prefix="/users",
+#     tags=["users"],
+# )
+
+# from auth.database import create_db_and_tables
 # create_db_and_tables()
+@app.get("/protected-route")
+async def protected_route(user: User = Depends(current_user)):
+    print(user.id)
+    return f"Hello, {user.username}"
+
+

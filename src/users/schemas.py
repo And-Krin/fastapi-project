@@ -1,11 +1,19 @@
 from fastapi_users import schemas
 
-from typing import Union, Generic, List, Optional, TypeVar
+from typing import Union, Optional, List
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr
 
 from settings import settings
+
+
+class ItemBase(BaseModel):
+    title: Union[str, None] = None
+    body: Union[str, None] = None
+
+    class Config:
+        orm_mode = True
 
 
 class UserRead(schemas.BaseUser[int]):
@@ -24,6 +32,10 @@ class UserRead(schemas.BaseUser[int]):
         orm_mode = True
 
 
+class UserAndItems(UserRead):
+    items: List[ItemBase] = []
+
+
 class UserCreate(schemas.BaseUserCreate):
     username: str
     email: EmailStr
@@ -32,6 +44,9 @@ class UserCreate(schemas.BaseUserCreate):
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
     gender: settings.gender_list
+
+    class Config:
+        orm_mode = True
 
 
 class UserUpdate(schemas.BaseUserUpdate):
@@ -44,30 +59,6 @@ class UserUpdate(schemas.BaseUserUpdate):
     gender: settings.gender_list
     role: settings.role_list
 
-
-class ItemBase(BaseModel):
-    title: Union[str, None] = None
-    body: Union[str, None] = None
-
     class Config:
         orm_mode = True
-
-
-class ItemCreate(ItemBase):
-    pass
-
-
-class Item(ItemBase):
-    id: int
-    owner_id: int
-    time_created: datetime
-    time_updated: Union[datetime, None] = None
-
-    class Config:
-        orm_mode = True
-
-
-class ItemAndUser(Item):
-    owner: UserRead
-
 

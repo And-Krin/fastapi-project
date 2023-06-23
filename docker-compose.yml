@@ -23,7 +23,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - "/home/lera/PycharmProjects/TestProject_02/fastapi_app:/code"
+      - "/home/lera/PycharmProjects/TestProject_02/code:/code"
 #      - ./:/src
     ports:
       - '8000:8000'

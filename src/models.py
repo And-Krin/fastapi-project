@@ -38,6 +38,9 @@ class User(SQLAlchemyBaseUserTable[int], Base):
 
     items = relationship("Item", back_populates="owner")
 
+
+table_users = User.__table__
+
 # class User(Base):
 #     __tablename__ = "user"
 #
@@ -69,7 +72,7 @@ class Item(Base):
     owner = relationship(User, back_populates="items")
 
 
-
+table_items = Item.__table__
 # async def create_db_and_tables():
 #     print('CREATE DATABASE')
 #     async with engine.begin() as conn:
