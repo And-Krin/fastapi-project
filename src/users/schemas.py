@@ -8,6 +8,27 @@ from pydantic import BaseModel, EmailStr
 from settings import settings
 
 
+class CreateUpdateDictModel(BaseModel):
+    def create_update_dict(self):
+        return self.dict(
+            exclude_unset=True,
+            exclude={
+                "id",
+                "is_superuser",
+                "is_active",
+                "is_verified",
+                "oauth_accounts",
+                "role"
+            },
+        )
+
+    def create_update_dict_superuser(self):
+        return self.dict(exclude_unset=True, exclude={
+            "id"
+        },
+                         )
+
+
 class ItemBase(BaseModel):
     title: Union[str, None] = None
     body: Union[str, None] = None
@@ -36,7 +57,7 @@ class UserAndItems(UserRead):
     items: List[ItemBase] = []
 
 
-class UserCreate(schemas.BaseUserCreate):
+class UserCreate(CreateUpdateDictModel):
     username: str
     email: EmailStr
     password: str
@@ -49,7 +70,7 @@ class UserCreate(schemas.BaseUserCreate):
         orm_mode = True
 
 
-class UserUpdate(schemas.BaseUserUpdate):
+class UserUpdate(CreateUpdateDictModel):
     username: str
     password: Optional[str]
     email: Optional[EmailStr]

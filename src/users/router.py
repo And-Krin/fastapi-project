@@ -2,16 +2,17 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select
 from fastapi_users import exceptions
 from fastapi_users.router.common import ErrorCode, ErrorModel
 
-from database import get_user_db, get_async_session
+import role
+from database import get_async_session
 
 from auth.manager import UserManager, get_user_manager
+from settings import settings
 from users import schemas
-from users import crud
-from models import User, Item
+from models import User
 from auth.base_config import current_user
 
 router = APIRouter(
@@ -19,7 +20,7 @@ router = APIRouter(
     tags=["users"],
 )
 
-# checking_for_admin = role.RoleChecker(settings.admin_list)
+check_is_admin = role.RoleChecker(settings.admin_list)
 
 
 async def get_user_or_404(
@@ -45,8 +46,6 @@ async def read_users(
     query = select(User.__table__).offset(skip).limit(limit)
     result = await db.execute(query)
     result_all = result.all()
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    print("=====>", result_all)
     return result_all
 
 
@@ -143,7 +142,6 @@ async def read_user(
 
 @router.get("/{id}",
             response_model=schemas.UserRead,
-            # dependencies=[Depends(get_current_superuser)],
             name="users:user",
             responses={
                     status.HTTP_401_UNAUTHORIZED: {
@@ -163,7 +161,7 @@ async def get_user(user=Depends(get_user_or_404)):
 
 @router.put("/{id}",
             response_model=schemas.UserUpdate,
-            dependencies=[Depends(current_user)],
+            dependencies=[Depends(check_is_admin)],
             name="users:patch_user",
             responses={
                 status.HTTP_401_UNAUTHORIZED: {
@@ -207,10 +205,15 @@ async def update_user(
     request: Request,
     user=Depends(get_user_or_404),
     user_manager: UserManager = Depends(get_user_manager),
+    is_me: User = Depends(current_user)
 ):
     try:
+        if is_me.is_superuser:
+            safe = False
+        else:
+            safe = True
         user = await user_manager.update(
-            user_update, user, safe=False, request=request
+            user_update, user, safe=safe, request=request
         )
         return schemas.UserUpdate.from_orm(user)
     except exceptions.InvalidPasswordException as e:
@@ -226,22 +229,3 @@ async def update_user(
             status.HTTP_400_BAD_REQUEST,
             detail=ErrorCode.UPDATE_USER_EMAIL_ALREADY_EXISTS,
         )
-
-# @router.put("/update/{user_id}",
-#             dependencies=[Depends(current_user)])
-# def update_user(
-#         edit_user: schemas.UserUpdate,
-#         edit_user_id: int,
-#         new_password: str,
-#         request_user_id: schemas.User = Depends(current_user),
-#         db: Session = Depends(get_db),):
-#     try:
-#         user = crud.get_user(db=db, user_id=edit_user_id)
-#         request_user = crud.get_user(db=db, user_id=request_user_id)
-#         if request_user.role != settings.role_admin:
-#             if edit_user_id != request_user.id or edit_user.role != user.role:
-#                 raise HTTPException(status_code=401, detail='Not enough rights')
-#         return crud.update_user(
-#             db=db, edit_user_id=edit_user_id, edit_user=edit_user, new_password=new_password)
-#     except exc.IntegrityError:
-#         raise HTTPException(status_code=400, detail="This username is already registered")

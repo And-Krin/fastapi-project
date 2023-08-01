@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 
 from auth.base_config import fastapi_users, auth_backend, current_user
 from models import User
@@ -9,9 +10,16 @@ from items.router import router as items_router
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(users_router)
 app.include_router(items_router)
-# app.include_router(auth.router)
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
@@ -24,17 +32,10 @@ app.include_router(
     tags=["auth"],
 )
 
-# app.include_router(
-#     fastapi_users.get_users_router(UserRead, UserUpdate),
-#     prefix="/users",
-#     tags=["users"],
-# )
 
-# from auth.database import create_db_and_tables
-# create_db_and_tables()
 @app.get("/protected-route")
 async def protected_route(user: User = Depends(current_user)):
-    print(user.id)
+    # print(user.id)
     return f"Hello, {user.username}"
 
 

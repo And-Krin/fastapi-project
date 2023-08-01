@@ -14,7 +14,7 @@ RUN pip config set --user global.trusted-host files.pythonhosted.org
 RUN pip install -U pip
 RUN pip install --no-cache-dir -r /code/requirements/requirements.txt
 
-COPY ./src /code/src
+COPY . /code
 
 WORKDIR /code/src
 

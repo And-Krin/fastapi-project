@@ -1,11 +1,7 @@
-from fastapi_users import schemas
-
-from typing import Union, Optional
+from typing import Union
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
-
-from settings import settings
+from pydantic import BaseModel
 
 from users.schemas import UserRead
 

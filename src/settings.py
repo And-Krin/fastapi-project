@@ -1,10 +1,15 @@
 from typing import Literal, List
 from pydantic import BaseSettings
-from config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
+import config as conf
+
+URL = f"//{conf.DB_USER}:{conf.DB_PASS}@{conf.DB_HOST}:{conf.DB_PORT}/{conf.DB_NAME}"
+URL_TEST = f"//{conf.DB_USER_TEST}:{conf.DB_PASS_TEST}@{conf.DB_HOST_TEST}:{conf.DB_PORT_TEST}/{conf.DB_NAME_TEST}"
 
 
 class Settings(BaseSettings):
-    DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DATABASE_URL = f"postgresql+asyncpg:{URL}"
+    DATABASE_URL_TEST = f"postgresql+asyncpg:{URL_TEST}"
+    SECRET = conf.SECRET
     gender_list = Literal["Rather not say", "Male", "Female"]
     gender_default = "Rather not say"
     role_list = Literal["user", "moderator", "admin"]
