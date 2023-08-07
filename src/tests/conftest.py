@@ -16,8 +16,6 @@ from models import Base
 metadata = Base.metadata
 
 DATABASE_URL_TEST = settings.DATABASE_URL_TEST
-# DATABASE_URL_TEST = "postgresql+asyncpg://postgres:postgres@db:5432/db_test"
-# print('DATABASE_URL_TEST:', DATABASE_URL_TEST)
 
 engine_test = create_async_engine(DATABASE_URL_TEST, poolclass=NullPool)
 async_session_maker_test = async_sessionmaker(engine_test, class_=AsyncSession, expire_on_commit=False)

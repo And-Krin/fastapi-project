@@ -208,14 +208,15 @@ async def update_user(
     is_me: User = Depends(current_user)
 ):
     try:
-        if is_me.is_superuser:
-            safe = False
-        else:
-            safe = True
-        user = await user_manager.update(
-            user_update, user, safe=safe, request=request
-        )
-        return schemas.UserUpdate.from_orm(user)
+        if is_me.role in settings.admin_list:
+            if is_me.role in settings.superuser_list:
+                safe = False
+            else:
+                safe = True
+            user = await user_manager.update(
+                user_update, user, safe=safe, request=request
+            )
+            return schemas.UserUpdate.from_orm(user)
     except exceptions.InvalidPasswordException as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

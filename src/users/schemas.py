@@ -64,7 +64,7 @@ class UserCreate(CreateUpdateDictModel):
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
-    gender: settings.gender_list
+    gender: settings.gender_literal
 
     class Config:
         orm_mode = True
@@ -77,8 +77,8 @@ class UserUpdate(CreateUpdateDictModel):
     is_active: Optional[bool]
     is_superuser: Optional[bool]
     is_verified: Optional[bool]
-    gender: settings.gender_list
-    role: settings.role_list
+    gender: settings.gender_literal
+    role: settings.role_literal
 
     class Config:
         orm_mode = True

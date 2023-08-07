@@ -35,7 +35,6 @@ app.include_router(
 
 @app.get("/protected-route")
 async def protected_route(user: User = Depends(current_user)):
-    # print(user.id)
     return f"Hello, {user.username}"
 
 

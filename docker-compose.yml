@@ -22,8 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - "/home/lera/PycharmProjects/TestProject_03/code:/code"
-#      - ./:/src
+      - "./:/code"
     ports:
       - '8000:8000'
     depends_on:

@@ -46,24 +46,6 @@ class Item(Base):
 
 
 
-# class User(Base):
-#     __tablename__ = "user"
-#
-#     id = Column(Integer, primary_key=True, index=True)
-#     username = Column(String(length=32), unique=True, index=True)
-#     gender = Column(String, default=settings.gender_default)
-#     is_active = Column(Boolean, default=True, nullable=False)
-#     role = Column(String, default=settings.role_default)
-#     time_created = Column(DateTime(timezone=True), server_default=func.now())
-#     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
-#     email = Column(String(length=320), unique=True, index=True, nullable=False)
-#     hashed_password = Column(String(length=1024), nullable=False)
-#     is_superuser = Column(Boolean, default=False, nullable=False)
-#     is_verified = Column(Boolean, default=False, nullable=False)
-#
-#     items = relationship("Item", back_populates="owner")
-
-
 
 
 
