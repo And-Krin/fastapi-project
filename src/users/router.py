@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi_users import exceptions
-from fastapi_users.router.common import ErrorCode, ErrorModel
+from fastapi_users.router.common import ErrorCode
 
 import role
 from database import get_async_session
@@ -14,11 +14,9 @@ from settings import settings
 from users import schemas
 from models import User
 from auth.base_config import current_user
+from users.responses import status_codes
 
-router = APIRouter(
-    prefix="/users",
-    tags=["users"],
-)
+router = APIRouter()
 
 check_is_admin = role.RoleChecker(settings.admin_list)
 
@@ -52,11 +50,7 @@ async def read_users(
 @router.get("/me",
             response_model=schemas.UserRead,
             name="users:current_user",
-            responses={
-                status.HTTP_401_UNAUTHORIZED: {
-                    "description": "Missing token or inactive user.",
-                },
-            },
+            responses=status_codes.get_me,
             )
 async def me(
         user: User = Depends(current_user),
@@ -68,36 +62,7 @@ async def me(
             response_model=schemas.UserUpdate,
             dependencies=[Depends(current_user)],
             name="users:patch_current_user",
-            responses={
-                status.HTTP_401_UNAUTHORIZED: {
-                    "description": "Missing token or inactive user.",
-                },
-                status.HTTP_400_BAD_REQUEST: {
-                    "model": ErrorModel,
-                    "content": {
-                        "application/json": {
-                            "examples": {
-                                ErrorCode.UPDATE_USER_EMAIL_ALREADY_EXISTS: {
-                                    "summary": "A user with this email already exists.",
-                                    "value": {
-                                        "detail": ErrorCode.UPDATE_USER_EMAIL_ALREADY_EXISTS
-                                    },
-                                },
-                                ErrorCode.UPDATE_USER_INVALID_PASSWORD: {
-                                    "summary": "Password validation failed.",
-                                    "value": {
-                                        "detail": {
-                                            "code": ErrorCode.UPDATE_USER_INVALID_PASSWORD,
-                                            "reason": "Password should be"
-                                            "at least 3 characters",
-                                        }
-                                    },
-                                },
-                            }
-                        }
-                    },
-                },
-            },
+            responses=status_codes.put_me,
             )
 async def update_me(
     request: Request,
@@ -143,17 +108,7 @@ async def read_user(
 @router.get("/{id}",
             response_model=schemas.UserRead,
             name="users:user",
-            responses={
-                    status.HTTP_401_UNAUTHORIZED: {
-                        "description": "Missing token or inactive user.",
-                    },
-                    status.HTTP_403_FORBIDDEN: {
-                        "description": "Not a superuser.",
-                    },
-                    status.HTTP_404_NOT_FOUND: {
-                        "description": "The user does not exist.",
-                    },
-                },
+            responses=status_codes.get_id,
             )
 async def get_user(user=Depends(get_user_or_404)):
     return schemas.UserRead.from_orm(user)
@@ -163,42 +118,7 @@ async def get_user(user=Depends(get_user_or_404)):
             response_model=schemas.UserUpdate,
             dependencies=[Depends(check_is_admin)],
             name="users:patch_user",
-            responses={
-                status.HTTP_401_UNAUTHORIZED: {
-                    "description": "Missing token or inactive user.",
-                },
-                status.HTTP_403_FORBIDDEN: {
-                    "description": "Not a superuser.",
-                },
-                status.HTTP_404_NOT_FOUND: {
-                    "description": "The user does not exist.",
-                },
-                status.HTTP_400_BAD_REQUEST: {
-                    "model": ErrorModel,
-                    "content": {
-                        "application/json": {
-                            "examples": {
-                                ErrorCode.UPDATE_USER_EMAIL_ALREADY_EXISTS: {
-                                    "summary": "A user with this email already exists.",
-                                    "value": {
-                                        "detail": ErrorCode.UPDATE_USER_EMAIL_ALREADY_EXISTS
-                                    },
-                                },
-                                ErrorCode.UPDATE_USER_INVALID_PASSWORD: {
-                                    "summary": "Password validation failed.",
-                                    "value": {
-                                        "detail": {
-                                            "code": ErrorCode.UPDATE_USER_INVALID_PASSWORD,
-                                            "reason": "Password should be"
-                                            "at least 3 characters",
-                                        }
-                                    },
-                                },
-                            }
-                        }
-                    },
-                },
-            },
+            responses=status_codes.put_id,
             )
 async def update_user(
     user_update: schemas.UserUpdate,  # type: ignore

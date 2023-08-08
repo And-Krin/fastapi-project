@@ -12,10 +12,7 @@ from auth.base_config import current_user
 
 from settings import settings
 
-router = APIRouter(
-    prefix="/items",
-    tags=["items"],
-)
+router = APIRouter()
 
 check_is_moderator = role.RoleChecker(settings.moderator_list)
 

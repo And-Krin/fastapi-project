@@ -18,9 +18,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(users_router)
-app.include_router(items_router)
-
+app.include_router(
+    users_router,
+    prefix="/users",
+    tags=["users"],
+)
+app.include_router(
+    items_router,
+    prefix="/items",
+    tags=["items"],
+)
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/auth/jwt",
