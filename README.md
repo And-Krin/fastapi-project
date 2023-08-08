@@ -1,5 +1,6 @@
 # FastApi project
 ### Основные разделы:
+* **Структура проекта**
 * **Запуск проекта**
   * Подготовка environment
   * Создание контейнеров базы данных и проекта
@@ -8,7 +9,46 @@
 * **Тестирование**
   * Создание тестовой базы данных
   * Запуск тестов
-
+## Структура проекта
+___
+```
+code
+├── migrations/
+├── requirements
+│   └── dev.txt
+├── src
+│   ├── auth
+│   │   ├── base_config.py
+│   │   └── manager.py
+│   ├── commands
+│   │   ├── check.py
+│   │   └── crud.py
+│   ├── items
+│   │   ├── router.py
+│   │   └── schemas.py
+│   ├── tests
+│   │   ├── conftest.py
+│   │   └── test_auth.py
+│   ├── users
+│   │   ├── responses.py
+│   │   ├── router.py
+│   │   └── schemas.py
+│   ├── config.py
+│   ├── database.py
+│   ├── main.py
+│   ├── manage.py 
+│   ├── models.py 
+│   ├── role.py
+│   └── settings.py
+├── .dockerignore
+├── .env
+├── .gitignore
+├── alembic.ini
+├── docker-compose.yml
+├── Dockerfile
+├── pyproject.toml
+└── README.md
+```
 ## Запуск проекта
 ___
 * Подготовка environment
